@@ -1,1 +1,5 @@
 test_files/
+.git/
+.ipynb_checkpoints/
+test.out
+GSE23006_series_matrix_data.txt
