@@ -16,59 +16,73 @@ file as well as methods to clean the data file
 """
 import re
 import pandas as pd
-import requests
-import concurrent.futures
+import mygene
+import time
 
 
 class SeriesData:
     def __init__(self, fileName):
+        # regex for matching sample title and rows in data table
         regex = r"^!Sample(?=_title).*|^[^!I].*"
-        reCompiled = re.compile(regex)
+        reCompiled = re.compile(regex)  # compile regex for speed
+        # open the file and filter out lines that match regex
         with open(fileName, "r") as f:
             tableData = f.readlines()
             filterData = list(filter(reCompiled.match, tableData))
+        # split the data on the tab character to get each row as element in list
         cleanedData = list(map(lambda x: x.split("\t"), filterData))
         self.df = pd.DataFrame(cleanedData[3:], columns=cleanedData[1])
+        # rename column with affy probe ID
         self.df.rename(columns={"!Sample_title": "affy_gene_probe_id"}, inplace=True)
-        self.geneAnnotateDf = pd.DataFrame(
-            columns=[
-                "affy_gene_probe_id",
-                "Gene Name",
-                "Gene Description",
-                "Homologene",
-                "GCC acc",
-                "RefSeq",
-            ]
+        self.df["affy_gene_probe_id"] = self.df["affy_gene_probe_id"].str.replace(
+            '"', ""
         )
+        # take out quotes from affy probe ids and convert it to list
         self.affyProbeIDs = self.df["affy_gene_probe_id"].str.replace('"', "").to_list()
+        self.geneAnnotateDf = None
+        self.combinedDf = None
 
-    def myGeneCall(self, probe_id):
-        query = f"q=reporter:{probe_id}"
-        fields = "fields=symbol,name,refseq,homologene,accession"
-        url = f"http://mygene.info/v3/query?{query}&{fields}&size=1"
-        res = requests.get(url)
-        if len(res.json()["hits"]) != 0:
-            # for all the hardcoded stuff aka [0] ask about how to choose right one
-            jsonResponse = res.json()["hits"][0]
-            self.geneAnnotateDf = self.geneAnnotateDf.append(
-                {
-                    "affy_gene_probe_id": probe_id,
-                    "Gene Name": jsonResponse["symbol"],
-                    "Gene Description": jsonResponse["name"],
-                    "Homologene": jsonResponse["homologene"]["genes"][0][0],
-                    "GCC acc": jsonResponse["accession"]["genomic"][0],
-                    "RefSeq": jsonResponse["refseq"]["genomic"],
-                },
-                ignore_index=True,
-            )
+    def myGeneCall(self):
+        mg = mygene.MyGeneInfo()
+        # query with affy probe ids
+        # maybe add GenBank acc as well
+        self.geneAnnotateDf = mg.querymany(
+            self.affyProbeIDs,
+            scopes="reporter",
+            fields="symbol, name, refseq, homologene, acession",
+            as_dataframe=True,
+            df_index=False,
+            verbose=True,
+        )
+        # drop these columns
+        self.geneAnnotateDf.drop(
+            [
+                "_id",
+                "_score",
+                "homologene.genes",
+                "refseq.protein",
+                "refseq.rna",
+                "refseq.translation",
+                "refseq.translation.protein",
+                "refseq.translation.rna",
+                "notfound",
+            ],
+            axis=1,
+            inplace=True,
+        )
+        self.geneAnnotateDf.dropna(axis=0, inplace=True)
+        # rename affy probe id column to be able to merge
+        self.geneAnnotateDf.rename(
+            columns={"query": "affy_gene_probe_id"}, inplace=True
+        )
 
-    def parallelAPI(self):
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            executor.map(self.myGeneCall, self.affyProbeIDs[:50])
+    def geneAnnotator(self, df1):
+        pass
 
-    def combineDataFrame(self, df1, df2):
-        merged_df = pd.merge(df1, df2, on="affy_gene_probe_id", how="outer")
-        return merged_df
+    def combineDataFrame(self):
+        self.combinedDf = pd.merge(
+            self.df, self.geneAnnotateDf, on="affy_gene_probe_id", how="outer"
+        )
 
 
 class GSE23006(SeriesData):
@@ -84,6 +98,9 @@ class GSE460(SeriesData):
 
 
 if __name__ == "__main__":
+    start = time.time()
     test = SeriesData("GSE23006_series_matrix.txt")
-    test.parallelAPI()
-    print(test.geneAnnotateDf.head())
+    test.myGeneCall()
+    test.combineDataFrame()
+    test.combinedDf.to_csv("combined.csv")
+    print(f"end time {(time.time()-start) // 60} min")
