@@ -17,11 +17,13 @@ file as well as methods to clean the data file
 import re
 import pandas as pd
 import mygene
+from pathlib import Path
 import time
 
 
 class SeriesData:
     def __init__(self, fileName):
+        self.filename = fileName
         # regex for matching sample title and rows in data table
         regex = r"^!Sample(?=_title).*|^[^!I].*"
         reCompiled = re.compile(regex)  # compile regex for speed
@@ -71,18 +73,56 @@ class SeriesData:
             inplace=True,
         )
         self.geneAnnotateDf.dropna(axis=0, inplace=True)
-        # rename affy probe id column to be able to merge
+        # reorder columns
+        self.geneAnnotateDf = self.geneAnnotateDf.reindex(
+            columns=[
+                "query",
+                "homologene.id",
+                "symbol",
+                "name",
+                "refseq.genomic",
+            ],
+        )
+        # rename to more human readable form
         self.geneAnnotateDf.rename(
-            columns={"query": "affy_gene_probe_id"}, inplace=True
+            columns={
+                "query": "affy_gene_probe_id",
+                "homologene.id": "HG ID",
+                "symbol": "Gene Name",
+                "name": "Gene Description",
+                "refseq.genomic": "RefSeq",
+            },
+            inplace=True,
         )
 
-    def geneAnnotator(self, df1):
-        pass
+    def dataframeSorter(self, sampleTypes):
+        # MAKE SURE FOLDER NAME IS EXACT -- find way around this
+        geneDisplayPath = Path("Final_Project") / "gene_displayer" / "fileCleaner.py"
+        test = geneDisplayPath.parent.parent
+        print(f" DIRNAME {test}")
+        if len(sampleTypes) > 1:
+            for sample in sampleTypes:
+                sampleColumns = self.combinedDf.columns[
+                    ~self.combinedDf.columns.str.contains(sample)
+                ].to_list()
+                # filename = test / "data" / f"{self.filename[:-4]}_{sample}.csv"
+                self.combinedDf[sampleColumns].to_csv(
+                    f"{self.filename[:-4]}_{sample}.csv", index=False
+                )
+
+        else:
+            # filename = test / "data" / f"{self.filename[:-4]}.csv"
+            self.combinedDf.to_csv(f"{self.filename[:-4]}.csv", index=False)
 
     def combineDataFrame(self):
+        # merge on probe ids and unionize keys of both dataframes
         self.combinedDf = pd.merge(
-            self.df, self.geneAnnotateDf, on="affy_gene_probe_id", how="outer"
+            self.geneAnnotateDf, self.df, on="affy_gene_probe_id", how="outer"
         )
+
+        self.combinedDf.dropna(axis=0, inplace=True)
+        self.combinedDf.drop(["affy_gene_probe_id"], axis=1, inplace=True)
+        self.combinedDf.drop_duplicates(subset="Gene Name", inplace=True)
 
 
 class GSE23006(SeriesData):
@@ -99,8 +139,9 @@ class GSE460(SeriesData):
 
 if __name__ == "__main__":
     start = time.time()
-    test = SeriesData("GSE23006_series_matrix.txt")
+    test = SeriesData("GSE460_series_matrix.txt")
     test.myGeneCall()
     test.combineDataFrame()
-    test.combinedDf.to_csv("combined.csv")
+    # test.combinedDf.to_csv("output.csv", index=False)
+    test.dataframeSorter(["skin"])
     print(f"end time {(time.time()-start) // 60} min")
