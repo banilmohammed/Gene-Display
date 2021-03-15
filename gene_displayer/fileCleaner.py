@@ -17,13 +17,12 @@ file as well as methods to clean the data file
 import re
 import pandas as pd
 import mygene
-from pathlib import Path
-import time
+import pickle
 
 
 class SeriesData:
     def __init__(self, fileName):
-        self.filename = fileName
+        self.filename = fileName.split("/")[2]
         # regex for matching sample title and rows in data table
         regex = r"^!Sample(?=_title).*|^[^!I].*"
         reCompiled = re.compile(regex)  # compile regex for speed
@@ -97,22 +96,20 @@ class SeriesData:
 
     def dataframeSorter(self, sampleTypes):
         # MAKE SURE FOLDER NAME IS EXACT -- find way around this
-        geneDisplayPath = Path("Final_Project") / "gene_displayer" / "fileCleaner.py"
-        test = geneDisplayPath.parent.parent
-        print(f" DIRNAME {test}")
         if len(sampleTypes) > 1:
             for sample in sampleTypes:
                 sampleColumns = self.combinedDf.columns[
                     ~self.combinedDf.columns.str.contains(sample)
                 ].to_list()
-                # filename = test / "data" / f"{self.filename[:-4]}_{sample}.csv"
-                self.combinedDf[sampleColumns].to_csv(
-                    f"{self.filename[:-4]}_{sample}.csv", index=False
-                )
+                # self.combinedDf[sampleColumns].to_csv(
+                #    f"{self.filename[:-4]}_{sample}.csv", index=False
+                # )
+                newFilename = f"{self.filename[:-4]}_{sample}"
+                # self.combinedDf[sampleColumns].to_sql(newFilename, conn)
 
         else:
-            # filename = test / "data" / f"{self.filename[:-4]}.csv"
-            self.combinedDf.to_csv(f"{self.filename[:-4]}.csv", index=False)
+            # self.combinedDf.to_csv(f"{self.filename[:-4]}.csv", index=False)
+            self.combinedDf.to_pickle(f"../data/{self.filename[:-4]}.pkl")
 
     def combineDataFrame(self):
         # merge on probe ids and unionize keys of both dataframes
@@ -125,23 +122,9 @@ class SeriesData:
         self.combinedDf.drop_duplicates(subset="Gene Name", inplace=True)
 
 
-class GSE23006(SeriesData):
-    pass
-
-
-class GSE8056(SeriesData):
-    pass
-
-
-class GSE460(SeriesData):
-    pass
-
-
 if __name__ == "__main__":
-    start = time.time()
-    test = SeriesData("GSE460_series_matrix.txt")
+    test = SeriesData("../infiles/GSE460_series_matrix.txt")
     test.myGeneCall()
     test.combineDataFrame()
     # test.combinedDf.to_csv("output.csv", index=False)
     test.dataframeSorter(["skin"])
-    print(f"end time {(time.time()-start) // 60} min")
