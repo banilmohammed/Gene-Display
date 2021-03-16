@@ -6,7 +6,7 @@ import seaborn as sns
 import os
 
 class streamlit:
-    dataframes = [ 'cleaned_skin_data', 'cleaned_tongue_data' ]
+    dataframes = [ 'GSE460_series_matrix']
     inputGenes = []
     datasets = []
     smallDataframes = dict()
@@ -40,38 +40,44 @@ class streamlit:
     def collectDataframes():
         if streamlit.graphButton:
             for dataset in streamlit.datasets:
-                newRead = pd.read_csv(dataset + '.csv', index_col = "Gene name")
+                newRead = pd.read_csv(dataset + '.csv', index_col = "Gene Name")
+                print(newRead)
                 rows = newRead.loc[streamlit.inputGenes]
                 rows = rows.reset_index()
+                print(rows)
                 streamlit.smallDataframes[dataset] = rows
 
     def specifyDataframes():
             for i in streamlit.smallDataframes:
                 df = streamlit.smallDataframes[i]
-                if streamlit.selectReplicates == 'replicate1' or streamlit.selectReplicates == 'replicate2' or  streamlit.selectReplicates == 'replicate3':
+                if streamlit.selectReplicates == 'replicate1' or streamlit.selectReplicates == 'replicate2' or streamlit.selectReplicates == 'replicate3':
                     colDrop = []
                     for column in df.columns:
-                        if streamlit.selectReplicates not in column and column != 'Gene description' and column != 'Gene name':
+                        if streamlit.selectReplicates not in column and column != 'Gene Description' and column != 'Gene Name' and column != 'HG ID' and column != 'RefSeq':
                             colDrop.append(column)
                     cleanedDF = df.drop(columns = colDrop)
-                    cleanedDF = cleanedDF.set_index('Gene name')
+                    cleanedDF = cleanedDF.set_index('Gene Name')
                     streamlit.userDataframes[i] = cleanedDF
                 else:
                     columns = []
-                    geneDescription = df['Gene description'].tolist()
-                    geneName = df['Gene name'].tolist()
-                    df = df.drop(columns = ['Gene description', 'Gene name'])
+                    geneID = df['HG ID'].tolist()
+                    refSeq = df['RefSeq'].tolist()
+                    geneDescription = df['Gene Description'].tolist()
+                    geneName = df['Gene Name'].tolist()
+                    df = df.drop(columns = ['Gene Description', 'Gene Name', 'RefSeq', 'HG ID'])
                     for column in df.columns:
-                        newString = column[:column.index('_')]
-                        finalString = newString + '_average'
+                        newString = column[1:column.index('s')+1]
+                        finalString = newString + ' average'
                         columns.append(finalString)
                     df.columns = columns
                     df = df.T
                     df = df.reset_index()
                     df = df.groupby('index', sort=False).mean().transpose()
-                    df.insert(0, 'Gene name', geneName)
-                    df.insert(1, 'Gene description', geneDescription)
-                    cleanedDF = df.set_index('Gene name')
+                    df.insert(0, 'Gene Name', geneName)
+                    df.insert(1, 'HG ID', geneID)
+                    df.insert(2, 'Gene Description', geneDescription)
+                    df.insert(3, 'RefSeq', refSeq)
+                    cleanedDF = df.set_index('Gene Name')
                     streamlit.userDataframes[i] = cleanedDF
 
     def createDataframes():
@@ -86,7 +92,7 @@ class streamlit:
             st.header('Individual Graphs for Each Dataset')
             for i in streamlit.userDataframes:
                 df = streamlit.userDataframes[i]
-                newDF = df.drop(columns = 'Gene description')
+                newDF = df.drop(columns = ['HG ID', 'Gene Description', 'RefSeq'])
                 transposedDF = newDF.T
                 st.subheader(i)
                 fig, ax = plt.subplots()
@@ -105,22 +111,33 @@ class streamlit:
             for i in streamlit.userDataframes:
                 columns = []
                 df = streamlit.userDataframes[i]
-                newDF = df.drop(columns = 'Gene description')
+                newDF = df.drop(columns = ['HG ID', 'Gene Description', 'RefSeq'])
                 transposedDF = newDF.T
                 for column in transposedDF.columns:
                     newString = column + '_' + i
                     columns.append(newString)
                 transposedDF.columns = columns
                 dataframes.append(transposedDF.T)
-            combinedDF = pd.concat(dataframes)
-            fig, ax = plt.subplots()
-            for column in set(combinedDF.T.columns.tolist()):
-                combinedDF.T.plot(kind = 'line', y = column, ax=ax, rot=45, alpha = 0.5)
-            plt.title('Comparing Datasets')
-            plt.xlabel('Time')
-            plt.ylabel('Decay')
-            plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
-            st.write(fig)
+            if len(dataframes) > 1:
+                combinedDF = pd.concat(dataframes)
+                fig, ax = plt.subplots()
+                for column in set(combinedDF.T.columns.tolist()):
+                    combinedDF.T.plot(kind = 'line', y = column, ax=ax, rot=45, alpha = 0.5)
+                plt.title('Comparing Datasets')
+                plt.xlabel('Time')
+                plt.ylabel('Decay')
+                plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
+                st.write(fig)
+            else:
+                for data in dataframes:
+                    fig, ax = plt.subplots()
+                    for column in set(data.T.columns.tolist()):
+                        data.T.plot(kind = 'line', y = column, ax=ax, rot=45, alpha = 0.5)
+                    plt.title('Comparing Datasets')
+                    plt.xlabel('Time')
+                    plt.ylabel('Decay')
+                    plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
+                    st.write(fig)
 
 streamlit.createSidebar()
 streamlit.navBar()
