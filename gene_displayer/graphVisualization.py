@@ -119,6 +119,11 @@ class streamlit:
                     streamlit.inputGenes
                 ]  # create a new dataframe of only the genes that the user specified
                 rows = rows.reset_index()  # reset the indexing
+                filterCol = []
+                for col in rows.columns:
+                    newCol = col.replace('"', "")
+                    filterCol.append(newCol)
+                rows.columns = filterCol
                 streamlit.geneDataframes[
                     dataset
                 ] = rows  # set the key of the geneDataframes dictionary to the dataset name and the value to the dataframe
@@ -237,6 +242,7 @@ class streamlit:
                         newCol = column.replace('"', "")
                         matchEx = re.match(r"(\d+?)hrs?", newCol)
                         xAxis.append(int(matchEx.groups()[0]))
+                        print(xAxis)
                 newDF.columns = xAxis
                 transposedDF = newDF.T.astype(float)  # transpose the dataframe
                 st.subheader(i)  # create a subheader, which is the dataset name
@@ -332,3 +338,5 @@ streamlit.navBar()
 streamlit.collectDataframes()
 streamlit.specifyDataframes()
 streamlit.createDataframes()
+streamlit.createIndividuals()
+streamlit.createComparison()
