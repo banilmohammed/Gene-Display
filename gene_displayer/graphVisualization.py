@@ -114,15 +114,6 @@ class streamlit:
     def collectDataframes():
         """
         Create a dictionary of the datasets that the user selected for plotting.
-<<<<<<< HEAD
-        '''
-        if streamlit.graphButton: #check if the graph button is selected
-            for dataset in streamlit.datasets: #iterate over the datasets that the user selected
-                newRead = pd.read_csv(dataset + '.csv', index_col = 'Gene Name') # Read the file
-                rows = newRead.loc[streamlit.inputGenes] #create a new dataframe of only the genes that the user specified
-                rows = rows.reset_index() #reset the indexing
-                streamlit.geneDataframes[dataset] = rows #set the key of the geneDataframes dictionary to the dataset name and the value to the dataframe
-=======
         """
         if streamlit.graphButton:  # check if the graph button is selected
             for (
@@ -137,7 +128,6 @@ class streamlit:
                 streamlit.geneDataframes[
                     dataset
                 ] = rows  # set the key of the geneDataframes dictionary to the dataset name and the value to the dataframe
->>>>>>> 7ab24749772af2f36faf6462addc6ec20e57e129
 
     def specifyDataframes():
         """
@@ -234,7 +224,6 @@ class streamlit:
     def createIndividuals():
         """
         Plot a line graph for each dataset.
-<<<<<<< HEAD
         '''
         #check if the graph button is clicked and if the user chose 'Individual' in the navbar
         if streamlit.graphButton and streamlit.selectNavigation == 'Individual':
@@ -289,78 +278,6 @@ class streamlit:
                 fig, ax = plt.subplots() #plot subplots
                 for column in set(combinedDF.T.columns.tolist()): #iterate over the transposed dataframe columns
                     combinedDF.T.plot(kind = 'line', y = column, ax=ax, rot=45, alpha = 0.5) #plot each column into the graph of the transposed DataFrame
-=======
-        """
-        # check if the graph button is clicked and if the user chose 'Individual' in the navbar
-        if streamlit.graphButton and streamlit.selectNavigation == "Individual":
-            st.header("Individual Graphs for Each Dataset")  # set header name
-            for (
-                i
-            ) in (
-                streamlit.userDataframes
-            ):  # iterate over the filtered dataframes dictionary
-                df = streamlit.userDataframes[i]  # get the dataframe
-                newDF = df.drop(
-                    columns=["HG ID", "Gene Description", "RefSeq"]
-                )  # drop columns 'HG ID', 'Gene Description', 'RefSeq'
-                transposedDF = newDF.T  # transpose the dataframe
-                st.subheader(i)  # create a subheader, which is the dataset name
-                fig, ax = plt.subplots()  # create subplots
-                for column in set(
-                    transposedDF.columns.tolist()
-                ):  # iterate over the columns in the transposed dataframe
-                    transposedDF.plot(
-                        kind="line", y=column, ax=ax, rot=45, alpha=0.5
-                    )  # plot that column
-                # set the title name, x-axis name, y-axis name, and put the legend outside
-                plt.title(i)
-                plt.xlabel("Time")
-                plt.ylabel("Decay")
-                plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
-                # write the plot out onto the webpage
-                st.write(fig)
-
-    def createComparison():
-        # check if the graph button is clicked and if the user chose 'Comparison' in the navbar
-        if streamlit.graphButton and streamlit.selectNavigation == "Comparison":
-            st.header("Comparing Datasets")  # set header name
-            dataframes = []  # create a list of dataframes
-            for (
-                i
-            ) in (
-                streamlit.userDataframes
-            ):  # iterate over the filtered dataframes dictionary
-                columns = []  # create a column list
-                df = streamlit.userDataframes[i]  # get the dataframe
-                newDF = df.drop(
-                    columns=["HG ID", "Gene Description", "RefSeq"]
-                )  # drop the columns 'HG ID', 'Gene Description', 'RefSeq'
-                transposedDF = newDF.T  # transpose the dataframe
-                for column in transposedDF.columns:  # iterate over the columns
-                    newString = (
-                        column + "_" + i
-                    )  # rename the columns to contain the dataset name
-                    columns.append(
-                        newString
-                    )  # append the new column name into the columns list
-                transposedDF.columns = columns  # set the transposed dataframe columns to the columns list created
-                dataframes.append(
-                    transposedDF.T
-                )  # transpose dataframe again and append into the dataframes list
-            if (
-                len(dataframes) > 1
-            ):  # if the length of datframes is list is more than one
-                combinedDF = pd.concat(
-                    dataframes
-                )  # concatenate all the dataframes together
-                fig, ax = plt.subplots()  # plot subplots
-                for column in set(
-                    combinedDF.T.columns.tolist()
-                ):  # iterate over the transposed dataframe columns
-                    combinedDF.T.plot(
-                        kind="line", y=column, ax=ax, rot=45, alpha=0.5
-                    )  # plot each column into the graph of the transposed DataFrame
->>>>>>> 7ab24749772af2f36faf6462addc6ec20e57e129
                 # set the title name, x-axis name, y-axis name, and put the legend outside
                 plt.title("Comparing Datasets")
                 plt.xlabel("Time")
