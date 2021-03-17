@@ -69,7 +69,7 @@ class streamlit:
         st.title("GeneVis: A Tool to Compare Datasets")  # set title of website page
         st.sidebar.title("Visualization Selector")  # set sidebar title
         st.sidebar.markdown(
-            "Select Two Datasets to Compare"
+            "Select Datasets to Compare"
         )  # set markdown title telling user to choose datasets
         streamlit.datasets = st.sidebar.multiselect(
             "Select Datasets", streamlit.dataframes
@@ -185,15 +185,16 @@ class streamlit:
                     newString = column[
                         0 : column.index("_") + 1
                     ]  # create a string with just the time
+                    newString = newString.replace(" ", "") #get rid of any whitespace in the column name
                     finalString = (
                         newString + "average"
                     )  # then concatenate '_average' to the string that has the time
                     columns.append(finalString)  # then append into the list columns
                 df.columns = columns  # set these as the new column names
-                df = df.T  # transpose the dataframe
-                df = df.reset_index()  # reset the index
+                df = df.T.astype(float)  # transpose the dataframe
+                newDF = df.reset_index()  # reset the index
                 df = (
-                    df.groupby("index", sort=False).mean().transpose()
+                    newDF.groupby("index", sort=False).mean().T
                 )  # group the dataframe by the column 'index' and find the mean and then transpose
                 # insert back all the columns that were dropped
                 df.insert(0, "Gene Name", geneName)
@@ -238,11 +239,9 @@ class streamlit:
                     columns=["HG ID", "Gene Description", "RefSeq"]
                 )  # drop columns 'HG ID', 'Gene Description', 'RefSeq'
                 for column in newDF.columns.tolist():
-                    if column != "Gene Name":
-                        newCol = column.replace('"', "")
-                        matchEx = re.match(r"(\d+?)hrs?", newCol)
-                        xAxis.append(int(matchEx.groups()[0]))
-                        print(xAxis)
+                    if column != "Gene Name": #making sure the column isn't gene name
+                        matchEx = re.findall(r"(\d+)hrs?", column) #finding the number of hours
+                        xAxis.append(matchEx[0]) #append to the list of numbers xAxis
                 newDF.columns = xAxis
                 transposedDF = newDF.T.astype(float)  # transpose the dataframe
                 st.subheader(i)  # create a subheader, which is the dataset name
@@ -254,7 +253,7 @@ class streamlit:
                         kind="line", y=column, ax=ax, alpha=0.5
                     )  # plot that column
                 # set the title name, x-axis name, y-axis name, and put the legend outside
-                plt.title(i)
+                plt.title(i + " " + streamlit.selectReplicates)
                 plt.xlabel("Time (hours)")
                 plt.ylabel("Decay")
                 plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
@@ -266,22 +265,21 @@ class streamlit:
         if streamlit.graphButton and streamlit.selectNavigation == "Comparison":
             st.header("Comparing Datasets")  # set header name
             dataframes = []  # create a list of dataframes
-            xAxis = []
             for (
                 i
             ) in (
                 streamlit.userDataframes
             ):  # iterate over the filtered dataframes dictionary
                 columns = []  # create a column list
+                xAxis = []
                 df = streamlit.userDataframes[i]  # get the dataframe
                 newDF = df.drop(
                     columns=["HG ID", "Gene Description", "RefSeq"]
                 )  # drop the columns 'HG ID', 'Gene Description', 'RefSeq'
-                for column in newDF.columns.tolist():
-                    if column != "Gene Name":
-                        newCol = column.replace('"', "")
-                        matchEx = re.match(r"(\d+?)hrs?", newCol)
-                        xAxis.append(int(matchEx.groups()[0]))
+                for column in newDF.columns.tolist(): #iterate over the columns
+                    if column != "Gene Name": #make sure the column isn't gene name
+                        matchEx = re.findall(r"(\d+?)hrs?", column) #find the number of hours
+                        xAxis.append(matchEx[0]) #append that number to the list xAxis
                 newDF.columns = xAxis
                 transposedDF = newDF.T.astype(float)  # transpose the dataframe
                 for column in transposedDF.columns:  # iterate over the columns
