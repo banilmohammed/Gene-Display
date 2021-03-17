@@ -17,17 +17,19 @@ file as well as methods to clean the data file
 import re
 import pandas as pd
 import mygene
-import pickle
 
 
 class SeriesData:
-    def __init__(self, fileName):
-        self.filename = fileName.split("/")[2]
+    def __init__(self, output, fileName, sampleTypes):
+        self.output = output
+        self.filename = fileName
+        self.sampleTypes = sampleTypes
+        filenamePath = f"../infiles/{fileName}"
         # regex for matching sample title and rows in data table
         regex = r"^!Sample(?=_title).*|^[^!I].*"
         reCompiled = re.compile(regex)  # compile regex for speed
         # open the file and filter out lines that match regex
-        with open(fileName, "r") as f:
+        with open(filenamePath, "r") as f:
             tableData = f.readlines()
             filterData = list(filter(reCompiled.match, tableData))
         # split the data on the tab character to get each row as element in list
@@ -53,7 +55,7 @@ class SeriesData:
             fields="symbol, name, refseq, homologene, acession",
             as_dataframe=True,
             df_index=False,
-            verbose=True,
+            verbose=False,
         )
         # drop these columns
         self.geneAnnotateDf.drop(
@@ -94,21 +96,26 @@ class SeriesData:
             inplace=True,
         )
 
-    def dataframeSorter(self, sampleTypes):
+    def dataframeOutputter(self):
         # MAKE SURE FOLDER NAME IS EXACT -- find way around this
-        if len(sampleTypes) > 1:
-            for sample in sampleTypes:
+        if len(self.sampleTypes) > 1:
+            for sample in self.sampleTypes:
                 sampleColumns = self.combinedDf.columns[
                     ~self.combinedDf.columns.str.contains(sample)
                 ].to_list()
-                # self.combinedDf[sampleColumns].to_csv(
-                #    f"{self.filename[:-4]}_{sample}.csv", index=False
-                # )
-                newFilename = f"{self.filename[:-4]}_{sample}"
-                # self.combinedDf[sampleColumns].to_sql(newFilename, conn)
+                if self.output is True:
+                    self.combinedDf[sampleColumns].to_csv(
+                        f"../outfiles/{self.filename[:-4]}_{sample}.csv", index=False
+                    )
+                self.combinedDf[sampleColumns].to_pickle(
+                    f"../data/{self.filename[:-4]}_{sample}.pkl"
+                )
 
         else:
-            # self.combinedDf.to_csv(f"{self.filename[:-4]}.csv", index=False)
+            if self.output is True:
+                self.combinedDf.to_csv(
+                    f"../outfiles/{self.filename[:-4]}.csv", index=False
+                )
             self.combinedDf.to_pickle(f"../data/{self.filename[:-4]}.pkl")
 
     def combineDataFrame(self):
@@ -120,6 +127,12 @@ class SeriesData:
         self.combinedDf.dropna(axis=0, inplace=True)
         self.combinedDf.drop(["affy_gene_probe_id"], axis=1, inplace=True)
         self.combinedDf.drop_duplicates(subset="Gene Name", inplace=True)
+
+
+class ExistingData:
+    def __init__(self, filename):
+        self.existDf = pd.read_csv(f"../infiles/{filename}")
+        self.existDf.to_pickle(f"../data/{filename[:-4]}.pkl")
 
 
 if __name__ == "__main__":
