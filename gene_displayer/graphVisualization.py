@@ -255,7 +255,7 @@ class streamlit:
                 # set the title name, x-axis name, y-axis name, and put the legend outside
                 plt.title(i + " " + streamlit.selectReplicates)
                 plt.xlabel("Time (hours)")
-                plt.ylabel("Decay")
+                plt.ylabel("Intensity")
                 plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
                 # write the plot out onto the webpage
                 st.write(fig)
@@ -308,8 +308,8 @@ class streamlit:
                     )  # plot each column into the graph of the transposed DataFrame
                 # set the title name, x-axis name, y-axis name, and put the legend outside
                 plt.title("Comparing Datasets")
-                plt.xlabel("Time")
-                plt.ylabel("Decay")
+                plt.xlabel("Time (hours)")
+                plt.ylabel("Intensity")
                 plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
                 # write the plot out onto the webpage
                 st.write(fig)
@@ -324,8 +324,8 @@ class streamlit:
                         )  # plot each column into the graph of the transposed DataFrame
                     # set the title name, x-axis name, y-axis name, and put the legend outside
                     plt.title("Comparing Datasets")
-                    plt.xlabel("Time")
-                    plt.ylabel("Decay")
+                    plt.xlabel("Time (hours)")
+                    plt.ylabel("Intensity")
                     plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left")
                     # write the plot out onto the webpage
                     st.write(fig)
