@@ -1,6 +1,7 @@
 import streamlit as st # using this package for the front end interface
 import pandas as pd #using dataframes to read files and be able to plot them onto the front end
 import matplotlib.pyplot as plt #helps to plot the dataframes
+import re #regex
 
 class streamlit:
     '''
@@ -84,7 +85,7 @@ class streamlit:
         '''
         if streamlit.graphButton: #check if the graph button is selected
             for dataset in streamlit.datasets: #iterate over the datasets that the user selected
-                newRead = pd.read_csv(dataset + '.csv', index_col = "Gene Name") # Read the file
+                newRead = pd.read_csv(dataset + '.csv', index_col = 'Gene Name') # Read the file
                 rows = newRead.loc[streamlit.inputGenes] #create a new dataframe of only the genes that the user specified
                 rows = rows.reset_index() #reset the indexing
                 streamlit.geneDataframes[dataset] = rows #set the key of the geneDataframes dictionary to the dataset name and the value to the dataframe
@@ -148,15 +149,22 @@ class streamlit:
             st.header('Individual Graphs for Each Dataset') #set header name
             for i in streamlit.userDataframes: #iterate over the filtered dataframes dictionary
                 df = streamlit.userDataframes[i] #get the dataframe
+                xAxis = []
                 newDF = df.drop(columns = ['HG ID', 'Gene Description', 'RefSeq']) # drop columns 'HG ID', 'Gene Description', 'RefSeq'
+                for column in newDF.columns.tolist():
+                    if column != 'Gene Name':
+                        newCol = column.replace('"', "")
+                        matchEx = re.match(r"(\d+?)hrs?", newCol)
+                        xAxis.append(int(matchEx.groups()[0]))
+                newDF.columns = xAxis
                 transposedDF = newDF.T #transpose the dataframe
                 st.subheader(i) #create a subheader, which is the dataset name
                 fig, ax = plt.subplots() #create subplots
                 for column in set(transposedDF.columns.tolist()): #iterate over the columns in the transposed dataframe
-                    transposedDF.plot(kind = 'line', y = column, ax=ax, rot=45, alpha = 0.5) #plot that column
+                    transposedDF.plot(kind = 'line', y = column, ax=ax, alpha = 0.5) #plot that column
                 # set the title name, x-axis name, y-axis name, and put the legend outside
                 plt.title(i)
-                plt.xlabel('Time')
+                plt.xlabel('Time (hours)')
                 plt.ylabel('Decay')
                 plt.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
                 #write the plot out onto the webpage
@@ -167,10 +175,17 @@ class streamlit:
         if streamlit.graphButton and streamlit.selectNavigation == 'Comparison':
             st.header('Comparing Datasets') #set header name
             dataframes = [] #create a list of dataframes
+            xAxis = []
             for i in streamlit.userDataframes: #iterate over the filtered dataframes dictionary
                 columns = [] #create a column list
                 df = streamlit.userDataframes[i] #get the dataframe
                 newDF = df.drop(columns = ['HG ID', 'Gene Description', 'RefSeq']) #drop the columns 'HG ID', 'Gene Description', 'RefSeq'
+                for column in newDF.columns.tolist():
+                    if column != 'Gene Name':
+                        newCol = column.replace('"', "")
+                        matchEx = re.match(r"(\d+?)hrs?", newCol)
+                        xAxis.append(int(matchEx.groups()[0]))
+                newDF.columns = xAxis
                 transposedDF = newDF.T #transpose the dataframe
                 for column in transposedDF.columns: #iterate over the columns
                     newString = column + '_' + i #rename the columns to contain the dataset name
