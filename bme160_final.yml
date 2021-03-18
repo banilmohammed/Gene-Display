@@ -5,7 +5,6 @@ channels:
   - defaults
 dependencies:
   - _libgcc_mutex=0.1
-  - _openmp_mutex=4.5
   - abseil-cpp=20200923.3
   - altair=4.1.0
   - anyio=2.1.0
@@ -93,11 +92,8 @@ dependencies:
   - libev=4.33
   - libevent=2.1.10
   - libffi=3.3
-  - libgcc-ng=9.3.0
-  - libgfortran-ng=9.3.0
   - libgfortran5=9.3.0
   - libglib=2.66.7
-  - libgomp=9.3.0
   - libiconv=1.16
   - liblapack=3.9.0
   - libllvm11=11.1.0
@@ -108,14 +104,12 @@ dependencies:
   - libprotobuf=3.15.1
   - libsodium=1.0.18
   - libssh2=1.9.0
-  - libstdcxx-ng=9.3.0
   - libthrift=0.13.0
   - libtiff=4.2.0
   - libutf8proc=2.6.1
   - libuuid=2.32.1
   - libwebp-base=1.2.0
   - libxcb=1.13
-  - libxkbcommon=1.0.3
   - libxml2=2.9.10
   - lz4-c=1.9.3
   - markupsafe=1.1.1
@@ -132,7 +126,6 @@ dependencies:
   - nest-asyncio=1.4.3
   - notebook=6.2.0
   - nspr=4.29
-  - nss=3.62
   - numpy=1.20.1
   - olefile=0.46
   - openssl=1.1.1j
