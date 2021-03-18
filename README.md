@@ -6,11 +6,11 @@ Before using GeneViz, please ensure that you have conda installed. GeneViz makes
 
 1. Navigate to the directory where you cloned this repository and run this command to setup the conda environment
 
-	conda env create -f bme160_final.yml
+		conda env create -f bme160_final.yml
 
 2. The conda environment should now be created. Activate the conda environment by using
 
-	conda activate bme160_final
+		conda activate bme160_final
 
 3. You should see the name **bme160_final** within parenthesis next to your prompt in your terminal. You can now start using the program.
 
@@ -28,5 +28,10 @@ GeneViz has a variety of command line options that can be used to customize what
 An example usage may be as following:
 	
 	$python3 main.py -a -o -i GSE460_series_matrix.txt -t skin
+
+### Additional Notes
+A couple additional notes for this program. There is a particular folder structure in place. **Infiles** is where input files go, **outfilses** is where the outputed csv files will appear, and **data** is where the pickle objects reside. Final note, when importing new datasets, there is a particular structure that the headers need to be in. It is as follows:
+
+	exampleSampleType, Xhrs_replicateY
 
 
