@@ -33,7 +33,7 @@
 !Series_sample_taxid	"10090"
 !Series_relation	"BioProject: https://www.ncbi.nlm.nih.gov/bioproject/PRJNA85065"
 
-!Sample_title	"0 hours, repeat 1"	"0 hours, repeat 2"	"0 hours, repeat 3"	"2 hours, repeat 1"	"2 hours, repeat 2"	"2 hours, repeat 3"	"3 days, repeat 1"	"3 days, repeat 2"	"3 days, repeat 3"	"14 days, repeat 1"	"14 days, repeat 2"	"14 days, repeat 3"
+!Sample_title	"0hrs_replicate1"	"0hrs_replicate2"	"0hrs_replicate3"	"2hrs_replicate1"	"2hrs_replicate2"	"2hrs_replicate3"	"72hrs_replicate1"	"72hrs_replicate2"	"72hrs_replicate3"	"336hrs_replicate1"	"336hrs_replicate2"	"336hrs_replicate3"
 !Sample_geo_accession	"GSM7478"	"GSM7479"	"GSM7480"	"GSM7481"	"GSM7482"	"GSM7483"	"GSM7484"	"GSM7485"	"GSM7486"	"GSM7487"	"GSM7488"	"GSM7489"
 !Sample_status	"Public on Jun 23 2003"	"Public on Jun 23 2003"	"Public on Jun 23 2003"	"Public on Jun 23 2003"	"Public on Jun 23 2003"	"Public on Jun 23 2003"	"Public on Jun 23 2003"	"Public on Jun 23 2003"	"Public on Jun 23 2003"	"Public on Jun 23 2003"	"Public on Jun 23 2003"	"Public on Jun 23 2003"
 !Sample_submission_date	"Jun 18 2003"	"Jun 18 2003"	"Jun 18 2003"	"Jun 18 2003"	"Jun 18 2003"	"Jun 18 2003"	"Jun 18 2003"	"Jun 18 2003"	"Jun 18 2003"	"Jun 18 2003"	"Jun 18 2003"	"Jun 18 2003"
